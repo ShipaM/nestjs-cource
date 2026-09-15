@@ -14,7 +14,7 @@ import { FindProductDto } from './product/find-product.dto.js';
 @Controller('product')
 export class ProductController {
   @Post('create')
-  async create(@Body() dto: Omit<ProductModel, 'id'>) {}
+  async create(@Body() dto: Omit<ProductModel, '_id'>) {}
 
   @Get(':id')
   async getProductById(@Param('id') id: string) {}

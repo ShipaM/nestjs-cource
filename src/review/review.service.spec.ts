@@ -1,25 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ReviewController } from './review.controller.js';
+import { getModelToken } from '@nestjs/mongoose';
 import { ReviewService } from './review.service.js';
+import { ReviewModel } from './review.model.js';
 
-describe('ReviewController', () => {
-  let controller: ReviewController;
+describe('ReviewService', () => {
+  let service: ReviewService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ReviewController],
       providers: [
+        ReviewService,
         {
-          provide: ReviewService,
+          provide: getModelToken(ReviewModel.name),
           useValue: {},
         },
       ],
     }).compile();
 
-    controller = module.get<ReviewController>(ReviewController);
+    service = module.get<ReviewService>(ReviewService);
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(service).toBeDefined();
   });
 });

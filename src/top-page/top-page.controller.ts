@@ -14,7 +14,7 @@ import { FindTopPageDto } from './dto/find-top-page.dto.js';
 @Controller('top-page')
 export class TopPageController {
   @Post('create')
-  async create(@Body() dto: Omit<TopPageModel, 'id'>) {}
+  async create(@Body() dto: Omit<TopPageModel, '_id'>) {}
 
   @Get(':id')
   async get(@Param('id') id: string) {}
