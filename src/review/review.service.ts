@@ -19,7 +19,7 @@ export class ReviewService {
     return this.reviewModel.findByIdAndDelete(id).exec();
   }
 
-  async findByProduct(productId: string): Promise<ReviewDocument[]> {
+  async findByProductId(productId: string): Promise<ReviewDocument[]> {
     return this.reviewModel
       .find({ productId: this.toObjectId(productId) })
       .exec();

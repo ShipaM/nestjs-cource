@@ -40,7 +40,7 @@ export type TopPageDocument = HydratedDocument<TopPageModel>;
 export class TopPageModel {
   _id: Types.ObjectId;
 
-  @Prop({ required: true, enum: TopLevelCategory })
+  @Prop({ type: Number, required: true, enum: TopLevelCategory })
   firstCategory: TopLevelCategory;
 
   @Prop({ required: true })
