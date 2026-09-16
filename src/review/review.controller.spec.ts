@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import { ReviewController } from './review.controller.js';
 import { ReviewService } from './review.service.js';
 import { REVIEW_NOT_FOUND } from './review.constants.js';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard.js';
 
 describe('ReviewController', () => {
   let controller: ReviewController;
@@ -26,7 +27,10 @@ describe('ReviewController', () => {
           useValue: reviewService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<ReviewController>(ReviewController);
   });

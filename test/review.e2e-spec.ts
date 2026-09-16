@@ -20,6 +20,7 @@ describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
   let createReviewId: string;
+  let token: string;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,6 +30,17 @@ describe('AppController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
+
+    const testUser = { email: 'test@gmail.com', password: '123456' };
+
+    await request(app.getHttpServer()).post('/auth/register').send(testUser);
+
+    const { body } = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send(testUser)
+      .expect(200);
+
+    token = body.access_token;
   });
 
   it('/review/create (POST) - success', async () => {
@@ -69,12 +81,14 @@ describe('AppController (e2e)', () => {
   it('/review/:id (DELETE) - success', async () => {
     await request(app.getHttpServer())
       .delete(`/review/${createReviewId}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200);
   });
 
   it('/review/:id (DELETE) - fail', async () => {
     await request(app.getHttpServer())
       .delete(`/review/${createReviewId}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(404, { statusCode: 404, message: REVIEW_NOT_FOUND });
   });
 
@@ -88,6 +102,7 @@ describe('AppController (e2e)', () => {
 
     const { body }: request.Response = await request(app.getHttpServer())
       .delete(`/review/by-product/${productIdToDelete}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
     expect(body.deletedCount).toBe(1);
@@ -96,6 +111,7 @@ describe('AppController (e2e)', () => {
   it('/review/by-product/:productId (DELETE) - no reviews', async () => {
     const { body }: request.Response = await request(app.getHttpServer())
       .delete(`/review/by-product/${new Types.ObjectId().toString()}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
     expect(body.deletedCount).toBe(0);
