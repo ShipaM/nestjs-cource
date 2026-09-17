@@ -3,6 +3,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
+import { Types } from 'mongoose';
 import { AuthService } from './auth.service.js';
 import { UserModel } from './user.model.js';
 import {
@@ -13,15 +14,23 @@ import {
 
 describe('AuthService', () => {
   let service: AuthService;
-  let userModel: { findOne: ReturnType<typeof vi.fn> };
+  let userModel: any;
   let jwtService: { signAsync: ReturnType<typeof vi.fn> };
 
   const dto = { email: 'test@test.com', password: 'password' };
 
   beforeEach(async () => {
-    userModel = {
-      findOne: vi.fn(),
-    };
+    // The mongoose model is invoked as `new this.userModel(...)` when
+    // creating a user, so the mock has to be a constructable function.
+    userModel = vi.fn().mockImplementation(function (
+      this: any,
+      data: Record<string, unknown>,
+    ) {
+      Object.assign(this, data);
+      this._id = new Types.ObjectId();
+      this.save = vi.fn().mockResolvedValue(undefined);
+    });
+    userModel.findOne = vi.fn();
     jwtService = {
       signAsync: vi.fn().mockResolvedValue('signed-jwt'),
     };
@@ -50,6 +59,19 @@ describe('AuthService', () => {
       await expect(service.createUser(dto)).rejects.toThrow(
         new BadRequestException(ALREADY_REGISTERED_ERROR),
       );
+    });
+
+    it('creates and returns a new user when the email is not registered', async () => {
+      userModel.findOne.mockReturnValue({
+        exec: vi.fn().mockResolvedValue(null),
+      });
+
+      const result = await service.createUser(dto);
+
+      expect(userModel).toHaveBeenCalledTimes(1);
+      expect(result._id).toBeDefined();
+      expect(result.email).toBe(dto.email);
+      expect((result as Record<string, unknown>).passwordHash).toBeUndefined();
     });
   });
 

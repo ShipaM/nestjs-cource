@@ -78,6 +78,18 @@ describe('AppController (e2e)', () => {
     expect(body.length).toBe(0);
   });
 
+  it('/review/by-product/:productId (GET) - fail on invalid id', async () => {
+    await request(app.getHttpServer())
+      .get('/review/by-product/not-a-mongo-id')
+      .expect(400);
+  });
+
+  it('/review/:id (DELETE) - fail without an access token', async () => {
+    await request(app.getHttpServer())
+      .delete(`/review/${createReviewId}`)
+      .expect(401);
+  });
+
   it('/review/:id (DELETE) - success', async () => {
     await request(app.getHttpServer())
       .delete(`/review/${createReviewId}`)
@@ -90,6 +102,12 @@ describe('AppController (e2e)', () => {
       .delete(`/review/${createReviewId}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(404, { statusCode: 404, message: REVIEW_NOT_FOUND });
+  });
+
+  it('/review/by-product/:productId (DELETE) - fail without an access token', async () => {
+    await request(app.getHttpServer())
+      .delete(`/review/by-product/${productId}`)
+      .expect(401);
   });
 
   it('/review/by-product/:productId (DELETE) - success', async () => {

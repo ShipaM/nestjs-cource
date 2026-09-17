@@ -65,6 +65,20 @@ describe('AuthController (e2e)', () => {
       .expect(400);
   });
 
+  it('/auth/register (POST) - fail when password is missing', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ email: `missing-password-${Date.now()}@test.com` })
+      .expect(400);
+  });
+
+  it('/auth/register (POST) - fail when password is too short', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ email: `short-password-${Date.now()}@test.com`, password: '123' })
+      .expect(400);
+  });
+
   it('/auth/login (POST) - success', async () => {
     const { body }: request.Response = await request(app.getHttpServer())
       .post('/auth/login')
